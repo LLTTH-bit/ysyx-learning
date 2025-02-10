@@ -168,3 +168,11 @@ terminal multiplexer，能够开好几个终端。这里记录一下常用命令
 - `n/p`：切换到后一个/前一个窗口
 - `d`：分离窗口，回到正常的终端而不是`tmux`
 - `w`：快速切换窗口
+
+## getting source code for PAs
+
+进行了一些配置，运行了`make` `make clean`等命令。等待PA1再修改这里的错误。
+
+需要注意的是，对`ysyx`学习，需要使用`git log tracer-ysyx`查看代码跟踪。
+
+使用`git commit --allow-empty`命令，允许文件没有改变但需要提交的情形。
