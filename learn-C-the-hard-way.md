@@ -25,3 +25,5 @@ int main(int agrc,char *argv[])
 如果使用`make`命令时改为`CFLAGS="-Wall" make ex1`，之后会正常生成`ex1`，但会报`warning`。如果在第一行加上`#include <stdio.h>`就不会报警告。
 
 总之，这节还是初步尝试，并未讲什么知识点。
+
+注意，这节里面给出的命令`man 3 puts`中的3指的是从`man`的第三章节中查找这个命令的手册。
