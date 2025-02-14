@@ -27,3 +27,34 @@ int main(int agrc,char *argv[])
 总之，这节还是初步尝试，并未讲什么知识点。
 
 注意，这节里面给出的命令`man 3 puts`中的3指的是从`man`的第三章节中查找这个命令的手册。
+
+## 练习2： 用Make代替Python
+
+上一节我们用了`make ex1`命令，但没有说这是什么原理。`make`可以将C代码编译成可以运行的二进制文件。
+
+在上节课的文件夹添加`Makefile`文件，内容如下：
+
+```Makefile
+CFLAGS=-Wall -g
+
+clean:
+    rm -f ex1
+```
+
+注意，最后一行前面必须是`TAB`，而不能是空格。
+
+上节课运行的命令：
+
+```bash
+$ make ex1
+# or this one too
+$ CFLAGS="-Wall" make ex1
+```
+
+第一行创建`ex1`文件，没有指定则根据`ex1`开头的其他文件去创建。第二行命令是让`cc`编译器报告所有的警告。这里先不细究。
+
+运行`make clean`能移除可执行文件，运行`make ex1`再次生成可执行文件。
+
+如果我们去掉了`ex1.c`中的`#include <stdio.h>`，在运行`make ex1`时就会弹出Warning。
+
+这里只简单讲了Makefile用法，具体的后面自己去学吧。
