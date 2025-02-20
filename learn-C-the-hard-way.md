@@ -58,3 +58,34 @@ $ CFLAGS="-Wall" make ex1
 如果我们去掉了`ex1.c`中的`#include <stdio.h>`，在运行`make ex1`时就会弹出Warning。
 
 这里只简单讲了Makefile用法，具体的后面自己去学吧。
+
+## 练习3：格式化输出
+
+运行这段代码，体会格式化输出：
+
+```C
+#include <stdio.h>
+
+int main()
+{
+    int age = 10;
+    int height = 72;
+
+    printf("I am %d years old.\n", age);
+    printf("I am %d inches tall.\n", height);
+
+    return 0;
+}
+```
+
+删去`printf`后面的变量，看看报错；定义变量但不赋值，看看报错。
+
+然后，找出更多让程序崩溃的方法吧。去看一看`printf`的手册。
+
+## 练习4：Valgrind介绍
+
+首先使用`sudo apt install valgrind`命令安装Valgrind。
+
+如果编译了一个有问题的文件，比如不给变量赋初值就使用、`printf`中不给出匹配的变量。编译过程中会有提示。
+
+如果在得到可执行文件后，执行`valgrind ./<executable-filename>`，就会给出详细的报错。
