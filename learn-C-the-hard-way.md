@@ -89,3 +89,491 @@ int main()
 如果编译了一个有问题的文件，比如不给变量赋初值就使用、`printf`中不给出匹配的变量。编译过程中会有提示。
 
 如果在得到可执行文件后，执行`valgrind ./<executable-filename>`，就会给出详细的报错。
+
+一开始没有报错，后来发现是编译选项中的`-O2`导致的。`-O`系列参数是编译器优化，0代表无优化，1代表基本优化，2代表中等优化，3代表最高优化。而其他参数中，`-Wall`是开启所有警告信息，`-g`是生成调试信息，`-o`是指定输出文件名称。
+
+## 练习5：一个C程序的结构
+
+运行代码，不再赘述：
+
+```C
+#include <stdio.h>
+
+/* This is a comment. */
+int main(int argc, char *argv[])
+{
+    int distance = 100;
+
+    // this is also a comment
+    printf("You are %d miles away.\n", distance);
+
+    return 0;
+}
+```
+
+## 练习6：变量类型
+
+再次运行代码：
+
+```C
+include <stdio.h>
+
+int main(int argc, char *argv[])
+{
+    int distance = 100;
+    float power = 2.345f;
+    double super_power = 56789.4532;
+    char initial = 'A';
+    char first_name[] = "Zed";
+    char last_name[] = "Shaw";
+
+    printf("You are %d miles away.\n", distance);
+    printf("You have %f levels of power.\n", power);
+    printf("You have %f awesome super powers.\n", super_power);
+    printf("I have an initial %c.\n", initial);
+    printf("I have a first name %s.\n", first_name);
+    printf("I have a last name %s.\n", last_name);
+    printf("My whole name is %s %c. %s.\n",
+            first_name, initial, last_name);
+
+    return 0;
+}
+```
+
+其中包含了整数、浮点、字符和字符串的打印方法，注意区分字符`char`和字符串`char[]`。
+
+修改代码让程序出现错误，观察报错。
+
+## 练习7：更多变量和一些算术
+
+继续运行代码：
+
+```C
+int main(int argc, char *argv[])
+{
+    int bugs = 100;
+    double bug_rate = 1.2;
+
+    printf("You have %d bugs at the imaginary rate of %f.\n",
+            bugs, bug_rate);
+
+    long universe_of_defects = 1L * 1024L * 1024L * 1024L;
+    printf("The entire universe has %ld bugs.\n",
+            universe_of_defects);
+
+    double expected_bugs = bugs * bug_rate;
+    printf("You are expected to have %f bugs.\n",
+            expected_bugs);
+
+    double part_of_universe = expected_bugs / universe_of_defects;
+    printf("That is only a %e portion of the universe.\n",
+            part_of_universe);
+
+    // this makes no sense, just a demo of something weird
+    char nul_byte = '\0';
+    int care_percentage = bugs * nul_byte;
+    printf("Which means you should care %d%%.\n",
+            care_percentage);
+
+    return 0;
+}
+```
+
+注意，最后一句用`%%`来打印一个百分号。最后一句printf还包含了`char`与`int`相乘，经过试验应该是拿字符的ASCII与整数相乘。
+
+## 练习8：大小和数组
+
+先运行一段代码：
+
+```C
+#include <stdio.h>
+
+int main(int argc, char *argv[])
+{
+    int areas[] = {10, 12, 13, 14, 20};
+    char name[] = "Zed";
+    char full_name[] = {
+        'Z', 'e', 'd',
+         ' ', 'A', '.', ' ',
+         'S', 'h', 'a', 'w', '\0'
+    };
+
+    // WARNING: On some systems you may have to change the
+    // %ld in this code to a %u since it will use unsigned ints
+    printf("The size of an int: %ld\n", sizeof(int));
+    printf("The size of areas (int[]): %ld\n",
+            sizeof(areas));
+    printf("The number of ints in areas: %ld\n",
+            sizeof(areas) / sizeof(int));
+    printf("The first area is %d, the 2nd %d.\n",
+            areas[0], areas[1]);
+
+    printf("The size of a char: %ld\n", sizeof(char));
+    printf("The size of name (char[]): %ld\n",
+            sizeof(name));
+    printf("The number of chars: %ld\n",
+            sizeof(name) / sizeof(char));
+
+    printf("The size of full_name (char[]): %ld\n",
+            sizeof(full_name));
+    printf("The number of chars: %ld\n",
+            sizeof(full_name) / sizeof(char));
+
+    printf("name=\"%s\" and full_name=\"%s\"\n",
+            name, full_name);
+
+    return 0;
+}
+```
+
+其中包含了不同类型变量占用的字节数（`sizeof`实现）。
+
+观察输出，看到`name`的尺寸是4，因为C语言字符串默认以`\0`结尾。在`fullname`中我们手动加入了`\0`，因此没有出现令人困惑的现象。通过访问`name[3]`即可发现这个问题。
+
+如果我们在定义`name`时直接写出`char[3]`而不是`char[]`，那么`name`大小就会变为3，也就没有默认的空字符结尾。如果访问超出数组范围的值，比如修改后的`name[3]`，由于下面正好初始化了`full_name`，这时候访问到的就是`full_name[0]`，序号增加则以此类推。但是如果访问`areas[10]`，可能是因为附近没有定义`int`，得到的是一个随机的值。
+
+## 练习9：数组和字符串
+
+运行代码：
+
+```C
+#include <stdio.h>
+
+int main(int argc, char *argv[])
+{
+    int numbers[4] = {0};
+    char name[4] = {'a'};
+
+    // first, print them out raw
+    printf("numbers: %d %d %d %d\n",
+            numbers[0], numbers[1],
+            numbers[2], numbers[3]);
+
+    printf("name each: %c %c %c %c\n",
+            name[0], name[1],
+            name[2], name[3]);
+
+    printf("name: %s\n", name);
+
+    // setup the numbers
+    numbers[0] = 1;
+    numbers[1] = 2;
+    numbers[2] = 3;
+    numbers[3] = 4;
+
+    // setup the name
+    name[0] = 'Z';
+    name[1] = 'e';
+    name[2] = 'd';
+    name[3] = '\0';
+
+    // then print them out initialized
+    printf("numbers: %d %d %d %d\n",
+            numbers[0], numbers[1],
+            numbers[2], numbers[3]);
+
+    printf("name each: %c %c %c %c\n",
+            name[0], name[1],
+            name[2], name[3]);
+
+    // print the name like a string
+    printf("name: %s\n", name);
+
+    // another way to use name
+    char *another = "Zed";
+
+    printf("another: %s\n", another);
+
+    printf("another each: %c %c %c %c\n",
+            another[0], another[1],
+            another[2], another[3]);
+
+    return 0;
+}
+```
+
+输出：
+
+```bash
+numbers: 0 0 0 0
+name each: a   
+name: a
+numbers: 1 2 3 4
+name each: Z e d
+name: Zed
+another: Zed
+another each: Z e d
+```
+
+对int数组，赋初值的，自动给0；而对于字符串，未赋初值的则是`\0`。
+
+另外，使用字符串时，使用上面代码中的`char *another = "some characters"`更省事且更符合语言习惯。
+
+## 练习10：字符串数组和循环
+
+运行代码：
+
+```C
+#include <stdio.h>
+
+int main(int argc, char *argv[])
+{
+    int i = 0;
+
+    // go through each string in argv
+    // why am I skipping argv[0]?
+    for(i = 1; i < argc; i++) {
+        printf("arg %d: %s\n", i, argv[i]);
+    }
+
+    // let's make our own array of strings
+    char *states[] = {
+        "California", "Oregon",
+        "Washington", "Texas"
+    };
+    int num_states = 4;
+
+    for(i = 0; i < num_states; i++) {
+        printf("state %d: %s\n", i, states[i]);
+    }
+
+    return 0;
+}
+```
+
+这段代码有两个需要注意的地方。
+
+### 1.main函数的参数
+
+`argc`是从命令行中获取的参数的个数；`argv`是参数的字符串数组。
+
+需要注意的是，当我们使用命令`./ex10 hello world`，`./ex10`本身也会当作参数存储到`argv[0]`中。不要忘记这一点。
+
+### 2.字符串数组
+
+这里的`argv[]`是一个字符串数组，`states`同理。这是一个二维数组。举个例子，`states[0][0]`对应"California"中的"C"，这样就好理解了。
+
+很好理解的一点是，`states[]`和`argv[]`可以互相赋值。
+
+如果把`NULL`赋值给`states[1]`，打印出来是`(null)`。
+
+### 另：for循环
+
+不做赘述，已经太熟悉了。
+
+## 练习11：While循环和布尔表达式
+
+运行代码：
+
+```C
+#include <stdio.h>
+
+int main(int argc, char *argv[])
+{
+    // go through each string in argv
+
+    int i = 0;
+    while(i < argc) {
+        printf("arg %d: %s\n", i, argv[i]);
+        i++;
+    }
+
+    // let's make our own array of strings
+    char *states[] = {
+        "California", "Oregon",
+        "Washington", "Texas"
+    };
+
+    int num_states = 4;
+    i = 0;  // watch for this
+    while(i < num_states) {
+        printf("state %d: %s\n", i, states[i]);
+        i++;
+    }
+
+    return 0;
+}
+```
+
+C语言中整数替代了布尔类型，其中0代表`false`，其他值代表`true`。至于`while`循环，很熟悉了，不必多言。
+
+令人疑惑的是，将`argv[]`中的元素赋值给`states[]`，没有报错，但是输出后发现没有成功修改，这是为何？
+
+## 练习12：If,Else If,Else
+
+`if else`语句很熟悉了，运行下面这个程序来温习一下吧：
+
+```C
+#include <stdio.h>
+
+int main(int argc, char *argv[])
+{
+    int i = 0;
+
+    if(argc == 1) {
+        printf("You only have one argument. You suck.\n");
+    } else if(argc > 1 && argc < 4) {
+        printf("Here's your arguments:\n");
+
+        for(i = 0; i < argc; i++) {
+            printf("%s ", argv[i]);
+        }
+        printf("\n");
+    } else {
+        printf("You have too many arguments. You suck.\n");
+    }
+
+    return 0;
+}
+```
+
+## 练习13：Switch语句
+
+通过运行下面代码复习：
+
+```C
+#include <stdio.h>
+
+int main(int argc, char *argv[])
+{
+    if(argc != 2) {
+        printf("ERROR: You need one argument.\n");
+        // this is how you abort a program
+        return 1;
+    }
+
+    int i = 0;
+    for(i = 0; argv[1][i] != '\0'; i++) {
+        char letter = argv[1][i];
+
+        switch(letter) {
+            case 'a':
+            case 'A':
+                printf("%d: 'A'\n", i);
+                break;
+
+            case 'e':
+            case 'E':
+                printf("%d: 'E'\n", i);
+                break;
+
+            case 'i':
+            case 'I':
+                printf("%d: 'I'\n", i);
+                break;
+
+            case 'o':
+            case 'O':
+                printf("%d: 'O'\n", i);
+                break;
+
+            case 'u':
+            case 'U':
+                printf("%d: 'U'\n", i);
+                break;
+
+            case 'y':
+            case 'Y':
+                if(i > 2) {
+                    // it's only sometimes Y
+                    printf("%d: 'Y'\n", i);
+                }
+                break;
+
+            default:
+                printf("%d: %c is not a vowel\n", i, letter);
+        }
+    }
+
+    return 0;
+}
+```
+
+C中的switch语句是一个“跳转表”，只能放置结果为整数的表达式。
+
+上面这个代码能够识别输入的参数中的元音字符并大写输出。这段代码只能接受一个参数（除去执行文件本身对应的那个参数）。
+
+程序根据`letter`的值进行跳转。需要注意的是，由于小写字母`a e i o u y`对应的代码不包含`break`，程序执行完后会继续**贯穿**执行，也就是执行它们下面`A E I O U Y`对应的代码。
+
+注意在Y的判断出，如果把`break`放在`if`里面，效果是一样的。
+
+注意，一定要先写`case`和`break`在写代码，不要忘记`default`！！！！！
+
+## 练习14：编写并使用函数
+
+>你该写自己的函数了。
+
+运行下面这段代码：
+
+```C
+#include <stdio.h>
+#include <ctype.h>
+
+// forward declarations
+int can_print_it(char ch);
+void print_letters(char arg[]);
+
+void print_arguments(int argc, char *argv[])
+{
+    int i = 0;
+
+    for(i = 0; i < argc; i++) {
+        print_letters(argv[i]);
+    }
+}
+
+void print_letters(char arg[])
+{
+    int i = 0;
+
+    for(i = 0; arg[i] != '\0'; i++) {
+        char ch = arg[i];
+
+        if(can_print_it(ch)) {
+            printf("'%c' == %d ", ch, ch);
+        }
+    }
+
+    printf("\n");
+}
+
+int can_print_it(char ch)
+{
+    return isalpha(ch) || isblank(ch);
+}
+
+
+int main(int argc, char *argv[])
+{
+    print_arguments(argc, argv);
+    return 0;
+}
+```
+
+其中，第二个头文件有我们需要的新的函数。
+
+这段代码将参数中的每一个**字母**输出了出来并输出对应的ASCII值。
+
+注意，如果要使用当前文件中没碰到过的函数，记得**前向声明**。代码中有体现这点。尝试去掉前向声明后，程序无法编译。
+
+**关于K&R语法**：
+教程中告诉我们不要使用这种语法。K&R语法的特点是：声明函数时仅指定函数名和返回类型，参数列表为空，或者只有参数名而没有参数类型。
+
+```C
+int add(); // 声明时不指定参数类型
+```
+
+定义函数时，在小括号中写上参数名，然后在大括号前面把参数定义齐全。
+
+```C
+int add(a, b) 
+int a; 
+int b; 
+{ 
+    return a + b; 
+}
+```
+
+现在常用的语法叫做ANSI C语法。
+
+## 练习15：指针，可怕的指针
