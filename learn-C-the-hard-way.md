@@ -577,3 +577,184 @@ int b;
 现在常用的语法叫做ANSI C语法。
 
 ## 练习15：指针，可怕的指针
+
+先运行代码：
+
+```C
+#include <stdio.h>
+
+int main(int argc, char *argv[])
+{
+    // create two arrays we care about
+    int ages[] = {23, 43, 12, 89, 2};
+    char *names[] = {
+        "Alan", "Frank",
+        "Mary", "John", "Lisa"
+    };
+
+    // safely get the size of ages
+    int count = sizeof(ages) / sizeof(int);
+    int i = 0;
+
+    // first way using indexing
+    for(i = 0; i < count; i++) {
+        printf("%s has %d years alive.\n",
+                names[i], ages[i]);
+    }
+
+    printf("---\n");
+
+    // setup the pointers to the start of the arrays
+    int *cur_age = ages;
+    char **cur_name = names;
+
+    // second way using pointers
+    for(i = 0; i < count; i++) {
+        printf("%s is %d years old.\n",
+                *(cur_name+i), *(cur_age+i));
+    }
+
+    printf("---\n");
+
+    // third way, pointers are just arrays
+    for(i = 0; i < count; i++) {
+        printf("%s is %d years old again.\n",
+                cur_name[i], cur_age[i]);
+    }
+
+    printf("---\n");
+
+    // fourth way with pointers in a stupid complex way
+    for(cur_name = names, cur_age = ages;
+            (cur_age - ages) < count;
+            cur_name++, cur_age++)
+    {
+        printf("%s lived %d years so far.\n",
+                *cur_name, *cur_age);
+    }
+
+    return 0;
+}
+```
+
+这段代码定义了整数数组和字符串数组，其中字符串数组是用`char *names[]={xxx}`方法定义的。
+
+首先使用索引打印，然后创建指针，通过指针取值和打印。
+
+创建指针：
+
+```C
+    int *cur_age = ages;
+    char **cur_name = names;
+```
+
+第一句创建了指向`ages`的指针；第二句中，由于`names`已经是指向字符的指针，故需要二重指针。这里隐式地表示了取地址`&`，因为是数组。但如果是单独的变量，需要加上取地址符`&`。
+
+我们有了指针`cur_ages`和`cur_names`，怎么使用它们？`*(cur_names+i)`和`name[i]`效果一样，与`cur_name[i]`也有一样的效果。
+
+而对于第四种方法，通过指针自增的方式取元素。需要注意的是，`cur_age-ages`比较的是当前地址与矩阵首地址之间的距离（因为`cur_age`不出意外一定是`ages[]`对应元素的地址）。
+
+>**文档中说**：
+对于你看到的其它所有情况，实际上应当使用数组。在早期，由于编译器不擅长优化数组，人们使用指针来加速它们的程序。然而，现在访问数组和指针的语法都会翻译成相同的机器码，并且表现一致。由此，你应该每次尽可能使用数组，并且按需将指针用作提升性能的手段。
+
+## 练习16：结构体和指向它们的指针
+
+本节课学习`struct`，并学习用`malloc`从原始内存中构造它们。
+
+```C
+#include <stdio.h>
+#include <assert.h>
+#include <stdlib.h>
+#include <string.h>
+
+struct Person {
+    char *name;
+    int age;
+    int height;
+    int weight;
+};
+
+struct Person *Person_create(char *name, int age, int height, int weight)
+{
+    struct Person *who = malloc(sizeof(struct Person));
+    assert(who != NULL);
+
+    who->name = strdup(name);
+    who->age = age;
+    who->height = height;
+    who->weight = weight;
+
+    return who;
+}
+
+void Person_destroy(struct Person *who)
+{
+    assert(who != NULL);
+
+    free(who->name);
+    free(who);
+}
+
+void Person_print(struct Person *who)
+{
+    printf("Name: %s\n", who->name);
+    printf("\tAge: %d\n", who->age);// \t means TAB
+    printf("\tHeight: %d\n", who->height);
+    printf("\tWeight: %d\n", who->weight);
+}
+
+int main(int argc, char *argv[])
+{
+    // make two people structures
+    struct Person *joe = Person_create(
+            "Joe Alex", 32, 64, 140);
+
+    struct Person *frank = Person_create(
+            "Frank Blank", 20, 72, 180);
+
+    // print them out and where they are in memory
+    printf("Joe is at memory location %p:\n", joe);
+    Person_print(joe);
+
+    printf("Frank is at memory location %p:\n", frank);
+    Person_print(frank);
+
+    // make everyone age 20 years and print them again
+    joe->age += 20;
+    joe->height -= 2;
+    joe->weight += 40;
+    Person_print(joe);
+
+    frank->age += 20;
+    frank->weight += 20;
+    Person_print(frank);
+
+    // destroy them both so we clean up
+    Person_destroy(joe);
+    Person_destroy(frank);
+
+    return 0;
+}
+```
+
+先关注头文件：
+
+- `<assert.h>`提供了`assert()`，用于判断真假，如果括号中表达式为假，会打印错误信息并停止执行。
+- `<stdlib.h>`提供了内存管理、程序控制、转换、随机数相关的函数。本代码中的`malloc()`和`free()`都是它提供的。
+- `<string.h>`是字符串相关，不再赘述。
+
+在代码的一开始先定义结构体，然后通过`struct Person *Person_create()`函数来创建一个具体的结构体。注意这里`*`的意思是，返回值是`struct Person`的指针，不要搞混。
+
+其中`malloc`用于申请一块原始的内存。在我们定义了`who`指针后，可以使用`who->name`语句访问结构体中的`name`元素。其中`who`是指针，而`who->name`是`(*who).name`的简写。我们使用指针而不是名称来访问结构体的时候，都需要这么干。
+
+而在`Person_destroy()`函数中，使用`free()`释放内存。注意在创建和清空之前都要进行`assert(who != NULL)`的判断。
+
+如果想按照创建一个普通的整型变量那样**在栈上创建一个结构体变量**，可以使用下面的命令：
+
+```C
+struct Person p = {"Alice", 30, 165, 55};//main函数结束时会自动销毁，内存自动释放
+```
+
+按照附加题中所要求，在栈上创建结构体变量，并通过`x.y`方式需改其中内容，同时写了一个函数，直接传递结构体而非指针。
+
+## 练习17：堆和栈的内存分配
